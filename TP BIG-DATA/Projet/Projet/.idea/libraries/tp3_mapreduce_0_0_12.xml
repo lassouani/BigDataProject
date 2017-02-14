@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="tp3-mapreduce-0.0.12">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/P1/mapreduce_maven/target/tp3-mapreduce-0.0.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

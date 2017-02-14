@@ -1,0 +1,6 @@
+/home/anxic/workspace/mapreduce_maven/src/main/java/mapreduce_maven/MultiDemPoint.java
+/home/anxic/workspace/mapreduce_maven/src/main/java/mapreduce_maven/KMeansReducer.java
+/home/anxic/workspace/mapreduce_maven/src/main/java/mapreduce_maven/KMeansMapper.java
+/home/anxic/workspace/mapreduce_maven/src/main/java/mapreduce_maven/KMeans.java
+/home/anxic/workspace/mapreduce_maven/src/main/java/mapreduce_maven/KMeansResultMapper.java
+/home/anxic/workspace/mapreduce_maven/src/main/java/mapreduce_maven/CentroidWritable.java

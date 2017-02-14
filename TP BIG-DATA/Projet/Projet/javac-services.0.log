@@ -1,0 +1,40 @@
+INFO	?	main	2017-01-26T20:34:03.848Z	org.javacs.JavaLanguageServer#buildClassPath	Emit classpath to C:\Users\asus-pc\AppData\Local\Temp\classpath2735815801529086798.txt
+SEVERE	?	main	2017-01-26T20:34:03.853Z	org.javacs.Main$4#onError	java.io.IOException: Cannot run program "null" (in directory "c:\Users\asus-pc\Desktop\TP BIG-DATA\Projet\Projet\P1\mapreduce_maven"): CreateProcess error=2, Le fichier spécifié est introuvable
+java.lang.RuntimeException: java.io.IOException: Cannot run program "null" (in directory "c:\Users\asus-pc\Desktop\TP BIG-DATA\Projet\Projet\P1\mapreduce_maven"): CreateProcess error=2, Le fichier spécifié est introuvable
+	at org.javacs.JavaLanguageServer.buildClassPath(JavaLanguageServer.java:593)
+	at org.javacs.JavaLanguageServer.readIfConfig(JavaLanguageServer.java:556)
+	at org.javacs.JavaLanguageServer.doFindConfig(JavaLanguageServer.java:525)
+	at java.util.HashMap.computeIfAbsent(Unknown Source)
+	at org.javacs.JavaLanguageServer.findConfig(JavaLanguageServer.java:517)
+	at org.javacs.JavaLanguageServer.findCompiler(JavaLanguageServer.java:477)
+	at org.javacs.JavaLanguageServer.findTree(JavaLanguageServer.java:809)
+	at org.javacs.JavaLanguageServer.lambda$doHover$34(JavaLanguageServer.java:983)
+	at java.util.Optional.ifPresent(Unknown Source)
+	at org.javacs.JavaLanguageServer.doHover(JavaLanguageServer.java:982)
+	at org.javacs.JavaLanguageServer.access$000(JavaLanguageServer.java:31)
+	at org.javacs.JavaLanguageServer$1.hover(JavaLanguageServer.java:118)
+	at io.typefox.lsapi.services.transport.server.LanguageServerEndpoint._doAccept(LanguageServerEndpoint.xtend:130)
+	at io.typefox.lsapi.services.transport.server.LanguageServerEndpoint.doAccept(LanguageServerEndpoint.xtend:117)
+	at io.typefox.lsapi.services.transport.server.LanguageServerEndpoint.accept(LanguageServerEndpoint.xtend:114)
+	at io.typefox.lsapi.services.transport.server.LanguageServerEndpoint.accept(LanguageServerEndpoint.xtend)
+	at io.typefox.lsapi.services.transport.AbstractLanguageEndpoint.handleMessage(LanguageEndpoint.xtend:67)
+	at io.typefox.lsapi.services.transport.AbstractLanguageEndpoint.lambda$connect$4(LanguageEndpoint.xtend:61)
+	at io.typefox.lsapi.services.json.StreamMessageReader$1.apply(StreamMessageReader.java:46)
+	at io.typefox.lsapi.services.json.StreamMessageReader$1.apply(StreamMessageReader.java:44)
+	at io.typefox.lsapi.services.json.StreamMessageReader.handleMessage(StreamMessageReader.xtend:128)
+	at io.typefox.lsapi.services.json.StreamMessageReader.listen(StreamMessageReader.xtend:61)
+	at io.typefox.lsapi.services.transport.AbstractLanguageEndpoint.connect(LanguageEndpoint.xtend:60)
+	at org.javacs.Main.run(Main.java:150)
+	at org.javacs.Main.main(Main.java:69)
+Caused by: java.io.IOException: Cannot run program "null" (in directory "c:\Users\asus-pc\Desktop\TP BIG-DATA\Projet\Projet\P1\mapreduce_maven"): CreateProcess error=2, Le fichier spécifié est introuvable
+	at java.lang.ProcessBuilder.start(Unknown Source)
+	at java.lang.Runtime.exec(Unknown Source)
+	at java.lang.Runtime.exec(Unknown Source)
+	at org.javacs.JavaLanguageServer.buildClassPath(JavaLanguageServer.java:586)
+	... 24 more
+Caused by: java.io.IOException: CreateProcess error=2, Le fichier spécifié est introuvable
+	at java.lang.ProcessImpl.create(Native Method)
+	at java.lang.ProcessImpl.<init>(Unknown Source)
+	at java.lang.ProcessImpl.start(Unknown Source)
+	... 28 more
+

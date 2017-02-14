@@ -1,0 +1,217 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width">
+  <title>Sujet de Projet</title>
+</head>
+<body>
+
+  <div role="main">
+        <div class="section">
+              
+            <h1 id="projet-clustering-a-grande-echelle-avec-k-means">Projet clustering à grande échelle avec k-means</h1>
+				<p>L'objectif de ce projet est d'implémenter un algorithme générique permettant de découper un ensemble en sous-ensembles disjoints (partition). L'algorithme à implémenter est l'algorithme appelé k-means.
+				Cet algorithme est un algorithme itératif qui fonctionne de la manière suivante : </p>
+				<ol>
+				<li>On choisit k éléments (appelés centroïdes) dans l'ensemble de départ. Dans notre implémentation on prendra obligatoirement les k premiers éléments valides et distincts de l’ensemble de départ.</li>
+				<li>On regroupe les éléments en k sous-ensembles de tel sorte qu’un élément appartient au sous-ensemble du centroïde dont il est le plus proche.</li>
+				<li>Pour chaque sous-ensemble on calcul un nouveau centroïde qui correspond à la valeur moyenne des éléments de l’ensemble.</li>
+				<li>Si les k nouveaux centroïdes sont suffisament différents des k centroïdes précédents on retourne à l’étape 2.</li>
+				<li>On attribue à chacun des éléments de départ le numéro du sous-ensemble auquel il appartient.</li>
+				</ol>
+				
+			<h2 id="partie-1">Partie 1 :</h2>
+			
+				<p>Dans cette première partie, on souhaite implémenter l’algorithme k-means pour des valeurs réelles en une dimension. </p>
+				<ul>
+				<li>Implémentez un programme qui prend en entrée deux le chemin de fichiers de fichier csv (fichier d'entrée et de sortie) et deux entiers.</li>
+				<li>Le premier  fichier correspond au fichier d'entrée</li>
+				<li>Le deuxième fichier correspond à l'unique fichier de sortie</li>
+				<li>Le premier entier au nombre de cluster que l’on désire (k)</li>
+				<li>Le deuxième au numéro de la colonne que l’on veut utiliser dans le fichier csv pour faire le clustering.</li>
+				</ul>
+				<p>Le fichier de sortie devra être le même que le fichier de départ avec une colonne supplémentaire qui indique dans quel cluster la valeur de la colonne i a été placée avec l’algorithme k-means.</p>
+				<p>Exemple d'appel, cette ligne calcul 3 clusters à partir de la colonne 5 du fichier meteo.csv et stocke le résultat dans le fichier result.csv.</p>
+				<p><code>yarn jar kmeans1D.jar /data/meteo.csv /kmeans/result.csv 3 5</code></p>
+				<h2 id="k-means-nd">k-means nD :</h2>
+				<p>Modifiez votre programme pour permettre de calculer le clustering sur un nombre arbitraire de dimensions. Votre programme prendra en paramètre le nombre de cluster puis les n colonnes du fichier que l’on veut utiliser comme dimensions. </p>
+				<p>Exemple d'appel, cette ligne calcul 3 clusters à partir des colonnes 5 et 6 (deux dimensions) du fichier worldcitiespop.csv et stocke le résultat dans le fichier result.csv.</p>
+				<p><code>yarn jar kmeansnD.jar /data/worldcitiespop.csv /kmeans/result.csv 3 5 6</code></p>
+				
+			<h2 id="k-means-hierarchique">k-means hiérarchique</h2>
+
+                <p>L’objectif de cette deuxième partie est d’appliquer récursivement l’algorithme kmeans pour créer un arbre de partitionnement. Ajoutez à votre programme précédent un paramètre qui donne le nombre de niveau N de la hiérarchie que l’on désire. Votre programme ajoutera N colonnes au fichier de départ, la colonne N_i indiquera le cluster auquel appartient un élément au niveau i.</p>
+
+			<h2 id="etiquetage">Etiquetage</h2>
+			
+			   <p>L’objectif de cette partie est d’attribuer un label à chaque cluster de chaque niveau obtenu dans les étapes précédentes. Pour cela écrivez un programme qui prend en entrée un fichier csv, un numéro de colonne d’étiquettes, un numéro de colonne de mesures et N numéros de colonnes de classification. En sortie il génère N fichiers correspondant aux étiquettes attribuées aux clusters d’un niveau. Pour déterminer l’étiquette d’un cluster on prendra le label de l’élément du cluster qui a la plus grande valeur sur la colonne de mesure.</p>
+	<h1 id="exemple">Exemple :</h1>
+	
+          <h2 id="fichier-source">Fichier source</h2>
+								<table>
+								<thead>
+								<tr>
+								<th>Etiquette</th>
+								<th>Mesure</th>
+								</tr>
+								</thead>
+								<tbody>
+								<tr>
+								<td>Paris</td>
+								<td>10000</td>
+								</tr>
+								<tr>
+								<td>Bordeaux</td>
+								<td>200</td>
+								</tr>
+								<tr>
+								<td>Brest</td>
+								<td>50</td>
+								</tr>
+								<tr>
+								<td>Auxerre</td>
+								<td>100</td>
+								</tr>
+								</tbody>
+								</table>
+				<p><code>yarn jar kmeansNdHierar.jar input.csv output.csv 2 3 1</code></p>
+		<h2 id="fichier-sortie-clustering-hierarchique">Fichier sortie clustering hiérarchique</h2>
+								<table>
+								<thead>
+								<tr>
+								<th>Etiquette</th>
+								<th>Mesure</th>
+								<th>N0</th>
+								<th>N1</th>
+								<th>N2</th>
+								</tr>
+								</thead>
+								<tbody>
+								<tr>
+								<td>Paris</td>
+								<td>10000</td>
+								<td>0</td>
+								<td>0</td>
+								<td>0</td>
+								</tr>
+								<tr>
+								<td>Bordeaux</td>
+								<td>200</td>
+								<td>0</td>
+								<td>1</td>
+								<td>0</td>
+								</tr>
+								<tr>
+								<td>Brest</td>
+								<td>50</td>
+								<td>0</td>
+								<td>1</td>
+								<td>1</td>
+								</tr>
+								<tr>
+								<td>Auxerre</td>
+								<td>100</td>
+								<td>1</td>
+								<td>0</td>
+								<td>0</td>
+								</tr>
+								</tbody>
+								</table>
+								<p><code>yarn jar labelize.jar classif.csv sortie</code></p>
+								<p>sortie.2.csv</p>
+								<table>
+								<thead>
+								<tr>
+								<th>N0</th>
+								<th>N1</th>
+								<th>N2</th>
+								<th>Label</th>
+								</tr>
+								</thead>
+								<tbody>
+								<tr>
+								<td>0</td>
+								<td>0</td>
+								<td>0</td>
+								<td>Paris</td>
+								</tr>
+								<tr>
+								<td>0</td>
+								<td>1</td>
+								<td>0</td>
+								<td>Bordeaux</td>
+								</tr>
+								<tr>
+								<td>0</td>
+								<td>1</td>
+								<td>1</td>
+								<td>Brest</td>
+								</tr>
+								<tr>
+								<td>1</td>
+								<td>0</td>
+								<td>0</td>
+								<td>Auxerre</td>
+								</tr>
+								</tbody>
+								</table>
+								<p>sortie.1.csv</p>
+								<table>
+								<thead>
+								<tr>
+								<th>N0</th>
+								<th>N1</th>
+								<th>Label</th>
+								<th>Mesure</th>
+								</tr>
+								</thead>
+								<tbody>
+								<tr>
+								<td>0</td>
+								<td>0</td>
+								<td>Paris</td>
+								<td>10000</td>
+								</tr>
+								<tr>
+								<td>0</td>
+								<td>1</td>
+								<td>Bordeaux</td>
+								<td>200</td>
+								</tr>
+								<tr>
+								<td>1</td>
+								<td>0</td>
+								<td>Auxerre</td>
+								<td>100</td>
+								</tr>
+								</tbody>
+								</table>
+								<p>Sortie.0.csv</p>
+								<table>
+								<thead>
+								<tr>
+								<th>N0</th>
+								<th>Label</th>
+								<th>Mesure</th>
+								</tr>
+								</thead>
+								<tbody>
+								<tr>
+								<td>0</td>
+								<td>Paris</td>
+								<td>10000</td>
+								</tr>
+								<tr>
+								<td>1</td>
+								<td>Auxerre</td>
+								<td>100</td>
+								</tr>
+								</tbody>
+								</table>
+              
+            </div>
+          </div>
+  
+</body>
+</html>

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Install Hadoop</title>
+</head>
+
+<body>
+
+
+
+    <div role="main">
+        <div class="section">
+
+            <h1 id="installation-dun-cluster-hadoop-et-hbase">Installation d'un cluster Hadoop et HBASE</h1>
+            <h2 id="prerequis">Prérequis :</h2>
+            <p>Un parc de machines interconnectées sous linux avec un serveur ssh installé sur chaque machine. Dans le cadre de ce TP nous utiliserons les machines d'une salle de TDs. Un ensemble de machines virtuelles peut aussi être utilisé.</p>
+            <h2 id="etape-1-telechargement">Etape 1: Téléchargement</h2>
+            <p>Téléchargez les fichiers binaires de :</p>
+            <ul>
+                <li><a href="http://hadoop.apache.org/releases.html" title="Hadoop website">Hadoop</a></li>
+                <li><a href="http://www.apache.org/dyn/closer.cgi/hbase/" title="hbase website">HBase</a></li>
+                <li><a href="http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html" title="java website">jdk java</a></li>
+                <li><a href="http://spark.apache.org/downloads.html" title="spark website">Spark</a></li>
+                <li><a href="../../src/install.tgz">install.tgz</a></li>
+            </ul>
+            <p>Décompressez install.tgz et placez tous les autres fichiers téléchargés dans le répertoire nommé install_files pour être compatible avec les <em>scripts</em> du tutorial.</p>
+            <h2 id="etape-2-configuration-des-inter-connexion-entre-les-machines">Etape 2: Configuration des inter connexion entre les machines :</h2>
+            <ul>
+                <li>Récupérez les adresses IP des machines sur lesquelles vous voulez installer votre cluster hadoop. Au crémi les adresses sont de la forme 10.0.NUM_SALLE.NUM_MACHINE.</li>
+                <li>Créez un fichier host avec toutes les adresses IP les unes à la suite des autres (une ip par ligne du fichier). Placez ce fichier dans le répertoire nommé <strong>scripts</strong> pour rester compatible avec la suite du tutorial.</li>
+                <li>Utilisez le script - <a href="../src/install/scripts/gen-cremi-hosts.sh">gen-cremi-hosts.sh</a> pour vous simplifier le travail.</li>
+            </ul>
+            <h2 id="etape-3-connection-ssh-entre-les-machines">Etape 3: Connection ssh entre les machines</h2>
+            <ul>
+                <li>Créez une clé publique ssh, attention il ne faut pas mettre de passphrase dans la clé publique</li>
+            </ul>
+            <pre><code>ssh-keygen -t ecdsa -f ~/.ssh/id_ecdsa 
+</code></pre>
+
+            <ul>
+                <li>Copiez cette clé publique sur toutes les machines de votre cluster. Si vous utilisez un compte nfs partagé sur toutes les machines de votre cluster cette opération n'est pas indispensable.</li>
+            </ul>
+            <pre><code>MACHINE=`cat hosts`
+for IP in $MACHINE
+do
+ ssh-copy-id $IP
+done
+</code></pre>
+
+            <h2 id="etape-4-definition-des-parametres-dinstallation-dhadoop">Etape 4: Définition des paramètres d'installation d'Hadoop.</h2>
+            <ul>
+                <li>Choisissez un emplacement de répertoire dans lequel notre installation de hadoop sera effectuée. Dans toute la suite on utilise la variable CLUSTER_INSTALL_DIR pour faire référence à ce répertoire. Attention le système de fichier contenant
+                    CLUSTER_INSTALL_DIR sera utilisé pour stocker les données d'hadoop. Il faut donc qu'il soit en local (disque sur la machine) sur les machines du cluster. Au crémi, utilisez le répertoire /espace/VOTRE_NOM comme <code>CLUSTER_INSTALL_DIR</code>                    (attention à utiliser des anti slash dans vos path). </li>
+                <li>Dans la liste de vos machines, déterminez une machine qui servira de namenode (point d'entré de votre cluster). Utilisez la machine sur laquelle vous êtes connectés. Attention pour éviter les conflits de ports, il est préférable de ne
+                    pas faire tourner deux serveurs (namenode) sur la même machine. Dans la suite, on nomme cette machine <code>CLUSTER_HOSTNAME</code> et <code>CLUSTER_HOST_NUMBER</code> le dernier numéro de l'IP de cette machine.</li>
+            </ul>
+            <p>Remplissez le fichier <em><a href="../src/install/scripts/install-env.sh">install-env.sh</a></em> avec vos valeur. </p>
+            <h2 id="etape-5-deploiement">Etape 5: Déploiement</h2>
+            <h3 id="copie-des-archives">copie des archives</h3>
+            <ul>
+                <li>Copiez et décompressez les archives hadoop, hbase et jdk dans le répertoire CLUSTER_INSTALL_DIR de toutes les machines du cluster. </li>
+            </ul>
+            <pre><code>#!/bin/bash                                                                                     
+#                                                                                               
+INSTALLDIR=$CLUSTER_INSTALL_DIR
+TMPDIR=$CLUSTER_INSTALL_DIR/tmp
+MACHINE=`cat hosts`
+for IP in $MACHINE
+do
+ echo &quot;[Start]: Computer &quot;$IP
+ echo &quot;-- Copying&quot;
+ ssh $IP &quot;mkdir -p $TMPDIR&quot;
+ scp -r ../install_files $IP:$TMPDIR/FILES
+ echo &quot;-- Untaring&quot;
+ ssh $IP &quot;mkdir -p $INSTALLDIR&quot;
+ ssh $IP &quot;cd $INSTALLDIR;tar xzvf $TMPDIR/FILES/hadoop* &gt; $TMPDIR/res.txt&quot;
+ ssh $IP &quot;cd $INSTALLDIR;tar xzvf $TMPDIR/FILES/jdk*    &gt; $TMPDIR/res.txt&quot;
+ ssh $IP &quot;cd $INSTALLDIR;tar xzvf $TMPDIR/FILES/hbase*  &gt; $TMPDIR/res.txt&quot;
+ ssh $IP &quot;mv $INSTALLDIR/jdk*     $INSTALLDIR/jdk&quot;
+ ssh $IP &quot;mv $INSTALLDIR/hbase*   $INSTALLDIR/hbase&quot;
+ ssh $IP &quot;mv $INSTALLDIR/hadoop*  $INSTALLDIR/hadoop&quot;
+ ssh $IP &quot;rm -fr $TMPDIR/FILES; rm $TMPDIR/res.txt&quot;
+ echo &quot;[done]&quot;
+done
+</code></pre>
+
+            <h3 id="creation-du-sytsteme-de-fichier">Création du sytstème de fichier</h3>
+            <p>Créez les répertoires nécessaires au stockage des données/métadonnées de hadoop et de hbase sur toutes vos machines.</p>
+            <ul>
+                <li>namenode dir: réperoire ou toutes les métadonnées des blocs hdfs seront stockées</li>
+                <li>datanode_dir: réperoire ou les blocs de données seront stockées.</li>
+                <li>zookeeper_dir: répertoire de travail de zookeeper utlisé par HBASE</li>
+            </ul>
+            <pre><code>#!/bin/bash
+#
+INSTALLDIR=$CLUSTER_INSTALL_DIR
+MACHINE=`cat hosts`
+for IP in $MACHINE
+do
+ echo &quot;[Start]: Computer &quot;$IP
+ echo &quot;-- Installation&quot;
+ ssh $IP &quot;mkdir -p $INSTALLDIR/DATA/namenode_dir&quot;
+ ssh $IP &quot;mkdir -p $INSTALLDIR/DATA/datanode_dir&quot;
+ ssh $IP &quot;mkdir -p $INSTALLDIR/DATA/zookeeper_dir&quot;
+ echo &quot;[done]&quot;
+done
+</code></pre>
+
+            <p>Utilisez le scritp <em><a href="../src/install/scripts/copy_all_files.sh">copy_all_files.sh</a></em> pour faire tout le déploiement. N'oubliez pas de nettoyer les fichiers de votre cluster à la fin du TP en utilisant le script <em><a href="../src/install/scripts/clean_all.sh">clean_all.sh</a></em>.</p>
+            <h2 id="etape-6-configuration-du-cluster-hadoop">Etape 6: Configuration du cluster hadoop</h2>
+            <p>Pour configurer hadoop et hbase il faut modififer les 7 fichiers de configuration suivants: </p>
+            <ul>
+                <li>hadoop-env.sh : Fichier déclaration des variables d'environnement de hadoop.</li>
+                <li>hbase-env.sh : Fichier déclaration des variables d'environnement de hbase.</li>
+                <li>core-site.xml : Fichier commun pour les clients hdfs/yarn</li>
+                <li>hdfs-site.xml : Fichier de configuration du serveur hdfs et des répertoires de stockage des données.</li>
+                <li>yarn-site.xml configuration du gestionaire de ressources YARN</li>
+                <li>mapred-site.xml : Fichier de configuration pour utiliser map reduce</li>
+                <li>mapred-site.xml : Fichier de configuration pour utiliser hbase</li>
+            </ul>
+            <h3 id="hadoop-envsh">hadoop-env.sh</h3>
+            <pre><code>Mofifiez la ligne:
+ export JAVA_HOME=${JAVA_HOME}
+en
+ export JAVA_HOME=CLUSTER_INSTALL_DIR/jdk
+</code></pre>
+
+            <p><em><a href="../src/install/confs.in/hadoop/hadoop-env.sh">hadoop-env.sh</a></em></p>
+            <h3 id="habase-envsh">habase-env.sh</h3>
+            <pre><code>Mofifiez les lignes:
+ export JAVA_HOME=${JAVA_HOME}
+ export HBASE_CLASSPATH=``
+en
+ export JAVA_HOME=CLUSTER_INSTALL_DIR/jdk
+ export HBASE_CLASSPATH=`CLUSTER_INSTALL_DIR/hadoop/bin/hadoop classpath`
+</code></pre>
+
+            <p><em><a href="../src/install/confs.in/habse/hbase-env.sh">habase-env.sh</a></em></p>
+            <h3 id="core-sitexml">core-site.xml</h3>
+            <pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;?xml-stylesheet type=&quot;text/xsl&quot; href=&quot;configuration.xsl&quot;?&gt;
+&lt;configuration&gt;
+ &lt;property&gt;
+  &lt;name&gt;fs.default.name&lt;/name&gt;
+  &lt;value&gt;hdfs://CLUSTER_HOSTNAME:CLUSTER_HDFS_PORT&lt;/value&gt;
+ &lt;/property&gt;
+&lt;/configuration&gt;
+</code></pre>
+
+            <p><em><a href="../src/install/confs.in/confHadoop/core-site.xml">core-site.xml</a></em></p>
+            <h3 id="hdfs-sitexml">hdfs-site.xml</h3>
+            <pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;?xml-stylesheet type=&quot;text/xsl&quot; href=&quot;configuration.xsl&quot;?&gt;
+&lt;configuration&gt;
+  &lt;property&gt;
+    &lt;name&gt;dfs.namenode.name.dir&lt;/name&gt;
+    &lt;value&gt;file://CLUSTER_INSTALL_DIR/DATA/namenode_dir&lt;/value&gt;
+  &lt;/property&gt;
+  &lt;property&gt;
+    &lt;name&gt;dfs.datanode.data.dir&lt;/name&gt;
+    &lt;value&gt;file://CLUSTER_INSTALL_DIR/DATA/datanode_dir&lt;/value&gt;
+  &lt;/property&gt;
+  &lt;property&gt;
+    &lt;name&gt;dfs.namenode.rpc-bind-host&lt;/name&gt;
+    &lt;value&gt;0.0.0.0&lt;/value&gt;
+  &lt;/property&gt;
+&lt;/configuration&gt;
+</code></pre>
+
+            <p><em><a href="../src/install/confs.in/hadoop/hdfs-site.xml">hdfs-site.xml</a></em></p>
+            <h3 id="mapred-sitexml">mapred-site.xml</h3>
+            <pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;?xml-stylesheet type=&quot;text/xsl&quot; href=&quot;configuration.xsl&quot;?&gt;
+&lt;configuration&gt;
+  &lt;property&gt;
+    &lt;name&gt;mapreduce.jobtracker.address&lt;/name&gt;
+    &lt;value&gt;CLUSTER_HOSTNAME:8021&lt;/value&gt;
+  &lt;/property&gt;
+
+  &lt;property&gt;
+    &lt;name&gt;mapreduce.framework.name&lt;/name&gt;
+    &lt;value&gt;yarn&lt;/value&gt;
+    &lt;description&gt;Execution framework.&lt;/description&gt;
+  &lt;/property&gt;
+
+  &lt;property&gt;
+    &lt;name&gt;yarn.app.mapreduce.am.resource.mb&lt;/name&gt;
+    &lt;value&gt;1024&lt;/value&gt;
+  &lt;/property&gt;
+
+  &lt;property&gt;
+    &lt;name&gt;mapreduce.map.cpu.vcores&lt;/name&gt;
+    &lt;value&gt;1&lt;/value&gt;
+    &lt;description&gt;The number of virtual cores required for each map task.&lt;/description&gt;
+  &lt;/property&gt;
+
+  &lt;property&gt;
+    &lt;name&gt;mapreduce.reduce.cpu.vcores&lt;/name&gt;
+    &lt;value&gt;1&lt;/value&gt;
+    &lt;description&gt;The number of virtual cores required for each map task.&lt;/description&gt;
+  &lt;/property&gt;
+
+  &lt;property&gt;
+    &lt;name&gt;mapreduce.map.memory.mb&lt;/name&gt;
+    &lt;value&gt;1024&lt;/value&gt;
+    &lt;description&gt;Larger resource limit for maps.&lt;/description&gt;
+  &lt;/property&gt;
+
+  &lt;property&gt;
+    &lt;name&gt;mapreduce.map.java.opts&lt;/name&gt;
+    &lt;value&gt;-Xmx1024m&lt;/value&gt;
+    &lt;description&gt;Heap-size for child jvms of maps.&lt;/description&gt;
+  &lt;/property&gt;
+
+  &lt;property&gt;
+    &lt;name&gt;mapreduce.reduce.memory.mb&lt;/name&gt;
+    &lt;value&gt;1024&lt;/value&gt;
+    &lt;description&gt;Larger resource limit for reduces.&lt;/description&gt;
+  &lt;/property&gt;
+
+  &lt;property&gt;
+    &lt;name&gt;mapreduce.reduce.java.opts&lt;/name&gt;
+    &lt;value&gt;-Xmx1024m&lt;/value&gt;
+    &lt;description&gt;Heap-size for child jvms of reduces.&lt;/description&gt;
+  &lt;/property&gt;
+&lt;/configuration&gt;
+</code></pre>
+
+            <p><em><a href="../src/install/confs.in/hadoop/mapred-site.xml">mapred-site.xml</a></em></p>
+            <h3 id="yarn-sitexml">yarn-site.xml</h3>
+            <pre><code>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;configuration&gt;
+  &lt;property&gt;
+    &lt;name&gt;yarn.resourcemanager.hostname&lt;/name&gt;
+    &lt;value&gt;CLUSTER_HOSTNAME&lt;/value&gt;
+    &lt;description&gt;The hostname of the RM.&lt;/description&gt;
+  &lt;/property&gt;
+  &lt;property&gt;
+    &lt;name&gt;yarn.nodemanager.aux-services&lt;/name&gt;
+    &lt;value&gt;mapreduce_shuffle&lt;/value&gt;
+    &lt;description&gt;shuffle service that needs to be set for Map Reduce to run &lt;/description&gt;
+  &lt;/property&gt;
+ &lt;property&gt;
+   &lt;name&gt;yarn.nodemanager.vmem-check-enabled&lt;/name&gt;
+    &lt;value&gt;false&lt;/value&gt;
+    &lt;description&gt;Whether virtual memory limits will be enforced for containers&lt;/description&gt;
+ &lt;/property&gt;
+ &lt;property&gt;
+   &lt;name&gt;yarn.nodemanager.vmem-pmem-ratio&lt;/name&gt;
+    &lt;value&gt;10&lt;/value&gt;
+    &lt;description&gt;Ratio between virtual memory to physical memory when setting memory limits for containers&lt;/description&gt;
+ &lt;/property&gt;
+ &lt;property&gt;
+  &lt;name&gt;yarn.resourcemanager.bind-host&lt;/name&gt;
+  &lt;value&gt;0.0.0.0&lt;/value&gt;
+ &lt;/property&gt;
+&lt;/configuration&gt;
+</code></pre>
+
+            <p><em><a href="../src/install/confs.in/hadoop/yarn-site.xml">yarn-site.xml</a></em></p>
+            <h3 id="hbase-sitexml">hbase-site.xml</h3>
+            <pre><code>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;?xml-stylesheet type=&quot;text/xsl&quot; href=&quot;configuration.xsl&quot;?&gt;
+
+&lt;configuration&gt;
+  &lt;property&gt;
+    &lt;name&gt;hbase.rootdir&lt;/name&gt;
+    &lt;value&gt;hdfs://CLUSTER_HOSTNAME:CLUSTER_HDFS_PORT/hbase&lt;/value&gt;
+  &lt;/property&gt;
+
+  &lt;property&gt;
+    &lt;name&gt;hbase.cluster.distributed&lt;/name&gt;
+    &lt;value&gt;true&lt;/value&gt;
+  &lt;/property&gt;
+
+  &lt;property&gt;
+    &lt;name&gt;hbase.zookeeper.quorum&lt;/name&gt;
+    &lt;value&gt;HBASE_QUORUM&lt;/value&gt;
+  &lt;/property&gt;
+
+   &lt;property&gt;
+    &lt;name&gt;hbase.zookeeper.property.dataDir&lt;/name&gt;
+    &lt;value&gt;file://CLUSTER_INSTALL_DIR/DATA/zookeeper_dir&lt;/value&gt;
+    &lt;description&gt;Property from ZooKeeper's config zoo.cfg.
+      The directory where the snapshot is stored.
+    &lt;/description&gt;
+   &lt;/property&gt;
+
+&lt;/configuration&gt;
+</code></pre>
+
+            <p><em><a href="../src/install/confs.in/hbase/hbase-site.xml">hbase-site.xml</a></em></p>
+            <p>Utilisez les script <em><a href="../src/install/confs.in/hbase/generate_conf.sh">generate_conf.sh</a></em> pour créer automatiquement tous ces fichiers. Utiliszer le script <em><a href="../src/install/confs.in/hbase/install_conf_files.sh">install_conf_files.sh</a></em>                pour déployer vos configurations sur le cluster.</p>
+            <h2 id="etape-7-demarrage-du-cluster">Etape 7: Démarrage du cluster</h2>
+            <ul>
+                <li>lancez la commande <code>source CLUSTER_INSTALL_DIR/user-env.sh</code></li>
+                <li>Formatez votre système de fichier distribué avec la commande <code>hdfs namenode -format BigData_VOTRE_NOM</code></li>
+                <li>lancez la commande start-dfs.sh pour démarrer le cluster HDFS (Distributed file system)</li>
+                <li>lancez la commande start-yarn.sh pour démarrer le cluster YARN (ressource negociator)</li>
+            </ul>
+            <p><strong> Félicitation, votre cluster est installé ! </strong></p>
+
+        </div>
+    </div>
+
+
+
+</body>
+
+</html>
